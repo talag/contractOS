@@ -1,12 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
 import io
 import pandas as pd
 
 from backend.database import get_db
-from backend.schemas.contract import ContractResponse
+from backend.schemas.contract import ContractResponse, ContractCreate
 from backend.services.file_service import extract_text_from_file
 from backend.services.ai_service import extract_contract_details
 from backend.services.contract_service import (
@@ -18,32 +18,44 @@ from backend.services.contract_service import (
 
 router = APIRouter(prefix="/api/contracts", tags=["contracts"])
 
-@router.post("/upload", response_model=ContractResponse)
-async def upload_contract(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    """Upload and process a contract file."""
+@router.post("/extract")
+async def extract_contract(file: UploadFile = File(...)):
+    """Extract contract details from file without saving to database."""
     try:
         # Validate file type
         allowed_extensions = ['pdf', 'docx', 'doc']
         file_extension = file.filename.lower().split('.')[-1]
-        
+
         if file_extension not in allowed_extensions:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid file type. Allowed types: {', '.join(allowed_extensions)}"
             )
-        
+
         # Read file content
         content = await file.read()
-        
+
         # Extract text from file
         text = extract_text_from_file(content, file.filename)
-        
+
         # Extract contract details using AI
         details = await extract_contract_details(text)
-        
-        # Create contract in database
-        contract = create_contract(db, details, file.filename)
-        
+
+        # Return extracted details with file name
+        return {
+            "file_name": file.filename,
+            **details
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/upload", response_model=ContractResponse)
+async def upload_contract(contract_data: ContractCreate, db: Session = Depends(get_db)):
+    """Save contract with provided data to database."""
+    try:
+        # Create contract in database with provided data
+        contract = create_contract(db, contract_data.dict(exclude={'file_name'}), contract_data.file_name)
+
         return contract
     except Exception as e:
         db.rollback()

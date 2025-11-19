@@ -15,19 +15,49 @@ export interface Contract {
   created_at: string;
 }
 
+export interface ExtractedContract {
+  file_name: string;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  contract_value: number | null;
+  payment_terms: string | null;
+  termination_terms: string | null;
+  summary: string | null;
+}
+
 export const api = {
-  async uploadContract(file: File): Promise<Contract> {
+  async extractContract(file: File): Promise<ExtractedContract> {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/api/contracts/upload`, {
+    const response = await fetch(`${API_BASE_URL}/api/contracts/extract`, {
       method: 'POST',
       body: formData,
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Failed to upload contract');
+      throw new Error(error.detail || 'Failed to extract contract details');
+    }
+
+    return response.json();
+  },
+
+  async saveContract(contractData: ExtractedContract): Promise<Contract> {
+    const response = await fetch(`${API_BASE_URL}/api/contracts/upload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(contractData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to save contract');
     }
 
     return response.json();

@@ -173,7 +173,7 @@ export function ContractDrawer() {
               className="flex-1 bg-card text-card-foreground border-border font-normal"
             >
               <EditIcon className="w-5 h-5 mr-2" strokeWidth={1.5} />
-              EditIcon Contract
+              Edit Contract
             </Button>
             <Button
               onClick={() => setShowDeleteDialog(true)}
