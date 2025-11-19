@@ -1,4 +1,4 @@
-# Logs
+# ----- Node -----
 logs
 *.log
 npm-debug.log*
@@ -22,3 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+backend/venv/
+
+# Environment files
+.env
+*.env
+
+# Build artifacts
+*.egg-info/
+.eggs/
+*.sqlite3
+*.db

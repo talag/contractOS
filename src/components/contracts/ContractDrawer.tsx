@@ -15,21 +15,46 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useModalStore } from '@/stores/modalStore';
 import { useContractStore } from '@/stores/contractStore';
+import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/api';
 import { useState } from 'react';
 
 export function ContractDrawer() {
   const { detailDrawerOpen, selectedContractId, closeDetailDrawer } = useModalStore();
   const { contracts, deleteContract } = useContractStore();
+  const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const contract = contracts.find((c) => c.id === selectedContractId);
 
   if (!detailDrawerOpen || !contract) return null;
 
-  const handleDelete = () => {
-    deleteContract(contract.id);
-    setShowDeleteDialog(false);
-    closeDetailDrawer();
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      // Call backend API to delete from database
+      await api.deleteContract(Number(contract.id));
+
+      // Delete from local store
+      deleteContract(contract.id);
+
+      setShowDeleteDialog(false);
+      closeDetailDrawer();
+
+      toast({
+        title: 'Contract Deleted',
+        description: `"${contract.name}" has been permanently deleted.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Delete Failed',
+        description: error instanceof Error ? error.message : 'Failed to delete contract',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -187,9 +212,10 @@ export function ContractDrawer() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground font-normal"
             >
-              Delete
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

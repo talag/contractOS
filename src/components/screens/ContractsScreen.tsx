@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusIcon, SearchIcon, DownloadIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,13 @@ export function ContractsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const contracts = useContractStore((state) => state.contracts);
+  const fetchContracts = useContractStore((state) => state.fetchContracts);
   const openAddModal = useModalStore((state) => state.openAddModal);
+
+  // Fetch contracts from database on component mount
+  useEffect(() => {
+    fetchContracts();
+  }, [fetchContracts]);
 
   const filteredContracts = contracts.filter((contract) => {
     const matchesSearch =
