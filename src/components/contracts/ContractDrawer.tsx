@@ -141,9 +141,7 @@ export function ContractDrawer() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">AI Summary</h3>
                   <p className="text-card-foreground leading-relaxed">
-                    This contract outlines the terms and conditions for services provided. Key obligations
-                    include timely delivery, quality assurance, and compliance with industry standards. Payment
-                    terms are net 30 days from invoice date.
+                    {contract.summary || 'No summary available'}
                   </p>
                 </div>
               </TabsContent>
@@ -151,7 +149,9 @@ export function ContractDrawer() {
               <TabsContent value="terms" className="space-y-6 mt-6">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Payment Terms</h3>
-                  <p className="text-card-foreground">Net 30 days from invoice date</p>
+                  <p className="text-card-foreground">
+                    {contract.paymentTerms || 'No payment terms available'}
+                  </p>
                 </div>
 
                 <Separator className="bg-border" />
@@ -159,17 +159,7 @@ export function ContractDrawer() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Termination Clause</h3>
                   <p className="text-card-foreground leading-relaxed">
-                    Either party may terminate this agreement with 30 days written notice. Early termination
-                    fees may apply as outlined in Section 7.2 of the contract.
-                  </p>
-                </div>
-
-                <Separator className="bg-border" />
-
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Renewal Terms</h3>
-                  <p className="text-card-foreground">
-                    Automatic renewal unless notice is provided 60 days prior to expiration.
+                    {contract.terminationTerms || 'No termination terms available'}
                   </p>
                 </div>
               </TabsContent>

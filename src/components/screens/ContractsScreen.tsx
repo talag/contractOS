@@ -69,7 +69,7 @@ export function ContractsScreen() {
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" strokeWidth={1.5} />
           <Input
-            placeholder="SearchIcon contracts..."
+            placeholder="Search contracts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-card text-card-foreground border-border"
