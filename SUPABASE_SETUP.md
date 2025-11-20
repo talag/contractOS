@@ -11,9 +11,9 @@
 ## 2. Configure Google OAuth
 
 ### Step 1: Get Your Google OAuth Credentials
-You already have these credentials:
-- **Client ID**: 96804919262-nua0uadjt6f9760hctp6diifo0i43rpf.apps.googleusercontent.com
-- **Client Secret**: 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
+You need your Google OAuth credentials from the Google Cloud Console.
+- **Client ID**: Found in your Google Cloud Console
+- **Client Secret**: Found in your Google Cloud Console
 
 ### Step 2: Update Google OAuth Redirect URIs
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
@@ -29,8 +29,8 @@ You already have these credentials:
 2. Find **Google** in the list of providers
 3. Toggle it **ON**
 4. Enter your Google OAuth credentials:
-   - **Client ID**: 96804919262-nua0uadjt6f9760hctp6diifo0i43rpf.apps.googleusercontent.com
-   - **Client Secret**: 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
+   - **Client ID**: Your Client ID from Google Cloud Console
+   - **Client Secret**: Your Client Secret from Google Cloud Console
 5. Click **Save**
 
 ## 3. Configure Site URL and Redirect URLs
