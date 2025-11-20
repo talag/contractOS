@@ -1,15 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from backend.config import settings
 from backend.database import init_db
 from backend.routers import contracts_router, analytics_router
+from backend.routers.auth import router as auth_router
 
 # Initialize database
 init_db()
 
 # Create FastAPI app
 app = FastAPI(title="Contract Management API")
+
+# Session middleware (required for OAuth)
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key-change-this-in-production")
 
 # CORS middleware
 app.add_middleware(
@@ -21,6 +26,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth_router)
 app.include_router(contracts_router)
 app.include_router(analytics_router)
 

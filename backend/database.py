@@ -21,4 +21,5 @@ def get_db():
 
 def init_db():
     from backend.models.contract import Contract
+    from backend.models.user import User
     Base.metadata.create_all(bind=engine)

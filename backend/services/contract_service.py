@@ -3,9 +3,10 @@ from typing import List, Optional
 from backend.models.contract import Contract
 from backend.schemas.contract import ContractCreate
 
-def create_contract(db: Session, contract_data: dict, file_name: str) -> Contract:
+def create_contract(db: Session, contract_data: dict, file_name: str, user_id: int) -> Contract:
     """Create a new contract in the database."""
     contract = Contract(
+        user_id=user_id,
         file_name=file_name,
         contact_name=contract_data.get("contact_name"),
         contact_email=contract_data.get("contact_email"),
@@ -17,26 +18,32 @@ def create_contract(db: Session, contract_data: dict, file_name: str) -> Contrac
         termination_terms=contract_data.get("termination_terms"),
         summary=contract_data.get("summary")
     )
-    
+
     db.add(contract)
     db.commit()
     db.refresh(contract)
     return contract
 
-def get_all_contracts(db: Session) -> List[Contract]:
-    """Get all contracts from the database."""
-    return db.query(Contract).all()
+def get_user_contracts(db: Session, user_id: int) -> List[Contract]:
+    """Get all contracts for a specific user."""
+    return db.query(Contract).filter(Contract.user_id == user_id).all()
 
-def get_contract_by_id(db: Session, contract_id: int) -> Optional[Contract]:
-    """Get a specific contract by ID."""
-    return db.query(Contract).filter(Contract.id == contract_id).first()
+def get_contract_by_id(db: Session, contract_id: int, user_id: int) -> Optional[Contract]:
+    """Get a specific contract by ID, ensuring it belongs to the user."""
+    return db.query(Contract).filter(
+        Contract.id == contract_id,
+        Contract.user_id == user_id
+    ).first()
 
-def delete_contract_by_id(db: Session, contract_id: int) -> bool:
-    """Delete a contract by ID."""
-    contract = db.query(Contract).filter(Contract.id == contract_id).first()
+def delete_contract_by_id(db: Session, contract_id: int, user_id: int) -> bool:
+    """Delete a contract by ID, ensuring it belongs to the user."""
+    contract = db.query(Contract).filter(
+        Contract.id == contract_id,
+        Contract.user_id == user_id
+    ).first()
     if not contract:
         return False
-    
+
     db.delete(contract)
     db.commit()
     return True

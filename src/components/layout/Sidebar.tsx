@@ -3,6 +3,7 @@ import { LayoutDashboardIcon, FileTextIcon, BarChart3Icon, SettingsIcon, LogOutI
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const navItems = [
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const { logout } = useAuth();
 
   return (
     <>
@@ -91,6 +93,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Bottom actions */}
         <div className="p-4 space-y-2">
           <button
+            onClick={logout}
             className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ease-in-out w-full text-left font-normal text-primary-foreground hover:bg-primary-foreground/10"
           >
             <LogOutIcon className="w-5 h-5" strokeWidth={1.5} />

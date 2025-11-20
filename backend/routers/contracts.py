@@ -11,10 +11,12 @@ from backend.services.file_service import extract_text_from_file
 from backend.services.ai_service import extract_contract_details
 from backend.services.contract_service import (
     create_contract,
-    get_all_contracts,
+    get_user_contracts,
     get_contract_by_id,
     delete_contract_by_id
 )
+from backend.utils.auth import get_current_user
+from backend.models.user import User
 
 router = APIRouter(prefix="/api/contracts", tags=["contracts"])
 
@@ -50,11 +52,20 @@ async def extract_contract(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload", response_model=ContractResponse)
-async def upload_contract(contract_data: ContractCreate, db: Session = Depends(get_db)):
+async def upload_contract(
+    contract_data: ContractCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """Save contract with provided data to database."""
     try:
-        # Create contract in database with provided data
-        contract = create_contract(db, contract_data.dict(exclude={'file_name'}), contract_data.file_name)
+        # Create contract in database with provided data and current user
+        contract = create_contract(
+            db,
+            contract_data.dict(exclude={'file_name'}),
+            contract_data.file_name,
+            current_user.id
+        )
 
         return contract
     except Exception as e:
@@ -62,30 +73,44 @@ async def upload_contract(contract_data: ContractCreate, db: Session = Depends(g
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("", response_model=List[ContractResponse])
-def get_contracts(db: Session = Depends(get_db)):
-    """Get all contracts."""
-    return get_all_contracts(db)
+def get_contracts(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all contracts for the current user."""
+    return get_user_contracts(db, current_user.id)
 
 @router.get("/{contract_id}", response_model=ContractResponse)
-def get_contract(contract_id: int, db: Session = Depends(get_db)):
-    """Get a specific contract by ID."""
-    contract = get_contract_by_id(db, contract_id)
+def get_contract(
+    contract_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get a specific contract by ID for the current user."""
+    contract = get_contract_by_id(db, contract_id, current_user.id)
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
     return contract
 
 @router.delete("/{contract_id}")
-def delete_contract(contract_id: int, db: Session = Depends(get_db)):
-    """Delete a contract by ID."""
-    success = delete_contract_by_id(db, contract_id)
+def delete_contract(
+    contract_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a contract by ID for the current user."""
+    success = delete_contract_by_id(db, contract_id, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Contract not found")
     return {"message": "Contract deleted successfully"}
 
 @router.get("/export/csv")
-def export_contracts_csv(db: Session = Depends(get_db)):
-    """Export all contracts to CSV."""
-    contracts = get_all_contracts(db)
+def export_contracts_csv(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Export all contracts for the current user to CSV."""
+    contracts = get_user_contracts(db, current_user.id)
     
     # Convert to DataFrame
     data = [{

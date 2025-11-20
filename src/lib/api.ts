@@ -28,7 +28,85 @@ export interface ExtractedContract {
   summary: string | null;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  created_at: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
+
+// Helper function to get auth headers
+function getAuthHeaders(token?: string): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  const authToken = token || localStorage.getItem('token');
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
+  return headers;
+}
+
 export const api = {
+  // Authentication endpoints
+  async signup(email: string, username: string, password: string): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, username, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to sign up');
+    }
+
+    return response.json();
+  },
+
+  async login(username: string, password: string): Promise<LoginResponse> {
+    const formData = new URLSearchParams();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to login');
+    }
+
+    return response.json();
+  },
+
+  async getCurrentUser(token?: string): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      headers: getAuthHeaders(token),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get user info');
+    }
+
+    return response.json();
+  },
+
+  // Contract endpoints
   async extractContract(file: File): Promise<ExtractedContract> {
     const formData = new FormData();
     formData.append('file', file);
@@ -49,9 +127,7 @@ export const api = {
   async saveContract(contractData: ExtractedContract): Promise<Contract> {
     const response = await fetch(`${API_BASE_URL}/api/contracts/upload`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(contractData),
     });
 
@@ -64,8 +140,10 @@ export const api = {
   },
 
   async getContracts(): Promise<Contract[]> {
-    const response = await fetch(`${API_BASE_URL}/api/contracts`);
-    
+    const response = await fetch(`${API_BASE_URL}/api/contracts`, {
+      headers: getAuthHeaders(),
+    });
+
     if (!response.ok) {
       throw new Error('Failed to fetch contracts');
     }
@@ -74,8 +152,10 @@ export const api = {
   },
 
   async getContract(id: number): Promise<Contract> {
-    const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`);
-    
+    const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`, {
+      headers: getAuthHeaders(),
+    });
+
     if (!response.ok) {
       throw new Error('Failed to fetch contract');
     }
@@ -86,6 +166,7 @@ export const api = {
   async deleteContract(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/contracts/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -94,8 +175,10 @@ export const api = {
   },
 
   async exportToCSV(): Promise<Blob> {
-    const response = await fetch(`${API_BASE_URL}/api/contracts/export/csv`);
-    
+    const response = await fetch(`${API_BASE_URL}/api/contracts/export/csv`, {
+      headers: getAuthHeaders(),
+    });
+
     if (!response.ok) {
       throw new Error('Failed to export contracts');
     }
@@ -106,9 +189,7 @@ export const api = {
   async chatAnalytics(message: string): Promise<string> {
     const response = await fetch(`${API_BASE_URL}/api/analytics/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ message }),
     });
 
