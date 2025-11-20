@@ -16,7 +16,7 @@ import {
 import { useModalStore } from '@/stores/modalStore';
 import { useContractStore } from '@/stores/contractStore';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/api';
+import { contractsService } from '@/lib/contracts';
 import { useState } from 'react';
 
 export function ContractDrawer() {
@@ -34,7 +34,7 @@ export function ContractDrawer() {
     setIsDeleting(true);
     try {
       // Call backend API to delete from database
-      await api.deleteContract(Number(contract.id));
+      await contractsService.deleteContract(Number(contract.id));
 
       // Delete from local store
       deleteContract(contract.id);

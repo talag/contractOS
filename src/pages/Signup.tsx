@@ -9,7 +9,7 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signup } = useAuth();
+  const { signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,8 +29,8 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await signup(email, username, password);
-      navigate('/');
+      await signup(email, password, username);
+      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign up');
     } finally {
@@ -38,8 +38,13 @@ export default function Signup() {
     }
   };
 
-  const handleGoogleSignup = () => {
-    window.location.href = 'http://localhost:8000/api/auth/google/login';
+  const handleGoogleSignup = async () => {
+    try {
+      setError('');
+      await loginWithGoogle();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sign up with Google');
+    }
   };
 
   return (

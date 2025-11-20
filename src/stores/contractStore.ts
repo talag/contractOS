@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Contract } from '@/types/contract';
-import { api, Contract as ApiContract } from '@/lib/api';
+import { contractsService, Contract as ApiContract } from '@/lib/contracts';
 
 interface ContractStore {
   contracts: Contract[];
@@ -21,7 +21,7 @@ export const useContractStore = create<ContractStore>((set) => ({
     })),
   fetchContracts: async () => {
     try {
-      const apiContracts = await api.getContracts();
+      const apiContracts = await contractsService.getContracts();
       // Transform API contracts to store contracts
       const contracts: Contract[] = apiContracts.map((apiContract: ApiContract) => ({
         id: String(apiContract.id),

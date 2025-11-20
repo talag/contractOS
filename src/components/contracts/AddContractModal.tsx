@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useModalStore } from '@/stores/modalStore';
 import { useContractStore } from '@/stores/contractStore';
 import { useToast } from '@/hooks/use-toast';
-import { api, ExtractedContract } from '@/lib/api';
+import { contractsService, ExtractedContract } from '@/lib/contracts';
 
 type Step = 'upload' | 'review';
 
@@ -29,7 +29,7 @@ export function AddContractModal() {
 
     try {
       // Extract contract details using AI (without saving to DB)
-      const data = await api.extractContract(file);
+      const data = await contractsService.extractContract(file);
 
       setExtractedData(data);
       setStep('review');
@@ -56,7 +56,7 @@ export function AddContractModal() {
 
     try {
       // Save the reviewed/edited contract to database
-      await api.saveContract(extractedData);
+      await contractsService.saveContract(extractedData);
 
       // Refresh contracts list from database
       await fetchContracts();

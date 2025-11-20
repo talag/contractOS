@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useModalStore } from '@/stores/modalStore';
 import { useContractStore } from '@/stores/contractStore';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/api';
+import { contractsService } from '@/lib/contracts';
 import { Contract } from '@/types/contract';
 
 interface ContractTableProps {
@@ -32,7 +32,7 @@ export function ContractTable({ contracts }: ContractTableProps) {
 
     setDeletingId(contractId);
     try {
-      await api.deleteContract(Number(contractId));
+      await contractsService.deleteContract(Number(contractId));
       deleteContract(contractId);
       toast({
         title: 'Contract Deleted',
