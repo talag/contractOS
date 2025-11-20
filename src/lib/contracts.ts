@@ -29,25 +29,39 @@ export interface ExtractedContract {
   summary: string | null;
 }
 
-const API_BASE_URL = 'http://localhost:8000';
+// Use environment variable for backend URL, fallback to localhost for development
+// @ts-ignore - Vite env variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export const contractsService = {
   // Extract contract using backend AI service
   async extractContract(file: File): Promise<ExtractedContract> {
+    // Check if backend is available (localhost backend can't be accessed from production)
+    if (API_BASE_URL.includes('localhost') && window.location.hostname !== 'localhost') {
+      throw new Error('AI extraction requires a deployed backend. This feature is only available when running locally.');
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/api/contracts/extract`, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contracts/extract`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to extract contract details');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to extract contract details');
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to backend server. Make sure the backend is running on port 8000.');
+      }
+      throw error;
     }
-
-    return response.json();
   },
 
   // Save contract to Supabase
