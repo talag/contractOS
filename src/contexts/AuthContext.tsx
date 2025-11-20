@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch user profile from our custom users table
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string, userEmail: string) => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -35,7 +35,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If profile doesn't exist, create it
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating new profile for', userEmail);
+          const { data: newProfile, error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: userId,
+                email: userEmail,
+                username: userEmail.split('@')[0],
+                auth_provider: 'local',
+              },
+            ])
+            .select()
+            .single();
+
+          if (insertError) throw insertError;
+          return newProfile;
+        }
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -49,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        fetchUserProfile(session.user.id).then(profile => {
+        fetchUserProfile(session.user.id, session.user.email || '').then(profile => {
           if (profile) {
             setUser(profile);
           }
@@ -62,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
+        const profile = await fetchUserProfile(session.user.id, session.user.email || '');
         if (profile) {
           setUser(profile);
         }
@@ -85,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Fetch user profile
     if (data.user) {
-      const profile = await fetchUserProfile(data.user.id);
+      const profile = await fetchUserProfile(data.user.id, data.user.email || '');
       if (profile) {
         setUser(profile);
       }
@@ -117,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (profileError) throw profileError;
 
       // Fetch the created profile
-      const profile = await fetchUserProfile(data.user.id);
+      const profile = await fetchUserProfile(data.user.id, data.user.email || '');
       if (profile) {
         setUser(profile);
       }
