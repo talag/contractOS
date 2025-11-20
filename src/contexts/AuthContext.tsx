@@ -67,14 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize auth state
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        fetchUserProfile(session.user.id, session.user.email || '').then(profile => {
-          if (profile) {
-            setUser(profile);
-          }
-        });
+        const profile = await fetchUserProfile(session.user.id, session.user.email || '');
+        if (profile) {
+          setUser(profile);
+        }
       }
       setIsLoading(false);
     });
