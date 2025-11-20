@@ -2,6 +2,7 @@ import { ReactNode, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { MenuIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AddContractModal } from '@/components/contracts/AddContractModal';
 
 interface AppShellProps {
   children: ReactNode;
@@ -33,6 +34,9 @@ export function AppShell({ children }: AppShellProps) {
           {children}
         </div>
       </main>
+
+      {/* Add Contract Modal */}
+      <AddContractModal />
     </div>
   );
 }
