@@ -13,10 +13,7 @@ init_db()
 # Create FastAPI app
 app = FastAPI(title="Contract Management API")
 
-# Session middleware (required for OAuth)
-app.add_middleware(SessionMiddleware, secret_key="your-secret-key-change-this-in-production")
-
-# CORS middleware
+# CORS middleware - must be added FIRST to handle preflight requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -24,6 +21,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Session middleware (required for OAuth)
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key-change-this-in-production")
 
 # Include routers
 app.include_router(auth_router)
