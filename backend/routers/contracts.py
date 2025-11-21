@@ -20,6 +20,11 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/api/contracts", tags=["contracts"])
 
+@router.options("/extract")
+async def extract_options():
+    """Handle CORS preflight for extract endpoint."""
+    return {}
+
 @router.post("/extract")
 async def extract_contract(file: UploadFile = File(...)):
     """Extract contract details from file without saving to database."""
